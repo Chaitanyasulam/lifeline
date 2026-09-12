@@ -1,0 +1,167 @@
+:root {
+  color: #e2e8f0;
+  background: #0f172a;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.app {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #334155;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+
+.tagline {
+  margin: 0.25rem 0 0;
+  color: #94a3b8;
+  font-size: 0.95rem;
+}
+
+.badge {
+  background: #1e293b;
+  border: 1px solid #475569;
+  color: #cbd5e1;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.panel {
+  background: #1e293b;
+  border: 1px solid #334155;
+  padding: 1.25rem 1.5rem;
+}
+
+.panel.highlight {
+  border-color: #3b82f6;
+}
+
+.panel h2 {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.panel p {
+  margin: 0.25rem 0;
+  color: #cbd5e1;
+}
+
+.note {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-top: 0.5rem !important;
+}
+
+.strategies {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.assignment-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.assignment-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #334155;
+  font-size: 0.9rem;
+}
+
+.assignment-list li:last-child {
+  border-bottom: none;
+}
+
+.pair {
+  font-family: ui-monospace, monospace;
+  color: #f1f5f9;
+}
+
+.time {
+  color: #94a3b8;
+}
+
+.empty {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.metrics-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.metrics-table th,
+.metrics-table td {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #334155;
+}
+
+.metrics-table th {
+  color: #94a3b8;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.metrics-table td.better {
+  color: #4ade80;
+}
+
+.metrics-table td.worse {
+  color: #f87171;
+}
+
+@media (max-width: 640px) {
+  .strategies {
+    grid-template-columns: 1fr;
+  }
+
+  .header {
+    flex-direction: column;
+  }
+}
