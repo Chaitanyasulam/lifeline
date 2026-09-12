@@ -1,5 +1,6 @@
 import { createEmergency } from '../models/Emergency.js';
-import { ROADS, EMERGENCY_SPAWN_POINTS, MOVE_TARGETS } from '../data/mapData.js';
+import { createResource } from '../models/Resource.js';
+import { ROADS, EMERGENCY_SPAWN_POINTS, RESOURCE_SPAWN_POINTS, MOVE_TARGETS } from '../data/mapData.js';
 
 /**
  * @typedef {import('../engine/optimizer.js').SimulationState} SimulationState
@@ -20,6 +21,66 @@ export function resetEmergencyCounter() {
  * @param {SimulationState} state
  * @param {Partial<import('../models/Emergency.js').Emergency>} [overrides]
  */
+/**
+ * @param {SimulationState} state
+ */
+function pickResourceTemplate(state) {
+  const pool = state.resources.filter((r) => r.status === 'available');
+  const candidates = pool.length > 0 ? pool : state.resources;
+  return candidates[Math.floor(Math.random() * candidates.length)];
+}
+
+/**
+ * @param {SimulationState} state
+ * @param {{ id: string }} template
+ */
+function nextResourceId(state, template) {
+  const match = template.id.match(/^([A-Z]+)(\d+)$/);
+  const prefix = match ? match[1] : 'R';
+  const padLen = match ? match[2].length : 2;
+
+  let maxNum = 0;
+  for (const resource of state.resources) {
+    const idMatch = resource.id.match(new RegExp(`^${prefix}(\\d+)$`));
+    if (idMatch) {
+      maxNum = Math.max(maxNum, parseInt(idMatch[1], 10));
+    }
+  }
+
+  return `${prefix}${String(maxNum + 1).padStart(padLen, '0')}`;
+}
+
+/**
+ * @param {SimulationState} state
+ * @param {Partial<import('../models/Resource.js').Resource>} [overrides]
+ */
+export function addResource(state, overrides = {}) {
+  const template = overrides.type
+    ? state.resources.find((r) => r.type === overrides.type) ?? state.resources[0]
+    : pickResourceTemplate(state);
+
+  if (!template) return state;
+
+  const spawn =
+    RESOURCE_SPAWN_POINTS[state.resources.length % RESOURCE_SPAWN_POINTS.length];
+  const id = overrides.id ?? nextResourceId(state, template);
+
+  return {
+    ...state,
+    resources: [
+      ...state.resources,
+      createResource({
+        id,
+        type: overrides.type ?? template.type,
+        location: overrides.location ?? spawn,
+        capacity: overrides.capacity ?? template.capacity,
+        capabilities: overrides.capabilities ?? template.capabilities,
+        status: 'available',
+      }),
+    ],
+  };
+}
+
 export function addEmergency(state, overrides = {}) {
   const spawn =
     EMERGENCY_SPAWN_POINTS[(state.emergencies.length - 1) % EMERGENCY_SPAWN_POINTS.length];
@@ -211,16 +272,10 @@ export function closeFacility(state, facilityId) {
 
 /** Demo event presets for presenter */
 export const DEMO_EVENTS = {
-  blockRoute: (state) => blockRoute(state, 'H2'),
-  disableAmbulance: (state) => disableResource(state, 'A03'),
-  escalateEmergency: (state) => escalateEmergency(state, 'E05'),
   addEmergency: (state) =>
     addEmergency(state, {
       severity: SEVERITY_OPTIONS[Math.floor(Math.random() * SEVERITY_OPTIONS.length)],
     }),
-  moveResource: (state) => {
-    const target = MOVE_TARGETS.A03;
-    return moveResource(state, 'A03', target);
-  },
+  addResource: (state) => addResource(state),
   closeFacility: (state) => closeFacility(state, 'H02'),
 };

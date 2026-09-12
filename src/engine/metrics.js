@@ -1,5 +1,3 @@
-import { getTravelDistance } from './travelTime.js';
-
 /**
  * @typedef {import('../models/Emergency.js').Emergency} Emergency
  * @typedef {import('../models/Resource.js').Resource} Resource
@@ -13,7 +11,7 @@ import { getTravelDistance } from './travelTime.js';
  * @property {number} criticalWaitTime
  * @property {number} resourcesUtilized
  * @property {number} unassignedEmergencies
- * @property {number} totalTravelDistance
+ * @property {number} totalTravelTime
  * @property {boolean} simulated
  */
 
@@ -49,20 +47,14 @@ export function calculateMetrics(assignments, emergencies, resources, options = 
     criticalWaitTime = Infinity;
   }
 
-  const totalTravelDistance = assignments.reduce((sum, a) => {
-    const resource = resources.find((r) => r.id === a.resourceId);
-    const emergency = emergencies.find((e) => e.id === a.emergencyId);
-    if (!resource || !emergency) return sum;
-    const dist = getTravelDistance(resource.location, emergency.location, options);
-    return sum + (dist === Infinity ? 0 : dist);
-  }, 0);
+  const totalTravelTime = assignments.reduce((sum, a) => sum + a.travelTime, 0);
 
   return {
     avgResponseTime: round(avgResponseTime),
     criticalWaitTime: criticalWaitTime === Infinity ? Infinity : round(criticalWaitTime),
     resourcesUtilized: assignments.length,
     unassignedEmergencies: unassigned.length,
-    totalTravelDistance: round(totalTravelDistance),
+    totalTravelTime: round(totalTravelTime),
     simulated: true,
   };
 }

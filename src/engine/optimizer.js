@@ -44,7 +44,7 @@ function getCommittedFromState(state, routingContext) {
   for (const resource of state.resources) {
     if (resource.status !== 'assigned' || !resource.currentAssignment) continue;
     const emergency = state.emergencies.find((e) => e.id === resource.currentAssignment);
-    if (!emergency || emergency.status !== 'assigned') continue;
+    if (!emergency || emergency.status === 'resolved') continue;
 
     committed.push({
       resourceId: resource.id,
@@ -86,7 +86,14 @@ export function optimize(state, strategy = STRATEGIES.LIFELINE_OPTIMIZED) {
     newAssignments = lifelineOptimizedAssign(availableResources, pendingEmergencies, routingContext);
   }
 
-  const assignments = [...committed, ...newAssignments];
+  const committedResourceIds = new Set(committed.map((a) => a.resourceId));
+  const committedEmergencyIds = new Set(committed.map((a) => a.emergencyId));
+  const safeNewAssignments = newAssignments.filter(
+    (a) =>
+      !committedResourceIds.has(a.resourceId) && !committedEmergencyIds.has(a.emergencyId),
+  );
+
+  const assignments = [...committed, ...safeNewAssignments];
 
   const metrics = calculateMetrics(
     assignments,

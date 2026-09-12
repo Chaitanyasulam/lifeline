@@ -29,7 +29,7 @@ export function MetricsPanel({ metrics }) {
         <MetricCard label="Critical Wait" value={criticalWait} unit=" min" />
         <MetricCard label="Resources Utilized" value={metrics.resourcesUtilized} />
         <MetricCard label="Unassigned" value={metrics.unassignedEmergencies} />
-        <MetricCard label="Total Distance" value={metrics.totalTravelDistance} unit=" units" />
+        <MetricCard label="Total Travel Time" value={metrics.totalTravelTime} unit=" min" />
       </div>
     </section>
   );

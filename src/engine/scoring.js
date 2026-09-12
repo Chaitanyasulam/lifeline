@@ -73,6 +73,31 @@ export function getNearestCompatibleDistance(emergency, resources, routingContex
 }
 
 /**
+ * Nearest available compatible resource for an emergency.
+ * @param {Emergency} emergency
+ * @param {Resource[]} resources
+ * @param {RoutingContext} routingContext
+ * @returns {Resource | null}
+ */
+export function getNearestCompatibleResource(emergency, resources, routingContext) {
+  let best = null;
+  let minTime = Infinity;
+
+  for (const resource of resources) {
+    if (resource.status !== 'available') continue;
+    if (!resourceHasCapabilities(resource, emergency.requiredCapabilities)) continue;
+
+    const time = getTravelTime(resource.location, emergency.location, routingContext);
+    if (time < minTime) {
+      minTime = time;
+      best = resource;
+    }
+  }
+
+  return best;
+}
+
+/**
  * Cost of a single resource-to-emergency assignment (lower is better).
  * Severity + travel time/distance weighted together.
  * @param {number} travelTimeMinutes

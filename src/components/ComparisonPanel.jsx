@@ -4,8 +4,8 @@ function fmtTime(v) {
   return v === Infinity ? '∞ min' : `${v} min`;
 }
 
-function fmtDist(v) {
-  return `${v} units`;
+function fmtTotalTime(v) {
+  return `${v} min`;
 }
 
 export function ComparisonPanel({ comparison }) {
@@ -14,7 +14,7 @@ export function ComparisonPanel({ comparison }) {
   const rows = [
     ['Avg response time', nearestFirst.metrics.avgResponseTime, lifeline.metrics.avgResponseTime, fmtTime],
     ['Critical wait time', nearestFirst.metrics.criticalWaitTime, lifeline.metrics.criticalWaitTime, fmtTime],
-    ['Total travel distance', nearestFirst.metrics.totalTravelDistance, lifeline.metrics.totalTravelDistance, fmtDist],
+    ['Total travel time', nearestFirst.metrics.totalTravelTime, lifeline.metrics.totalTravelTime, fmtTotalTime],
     ['System cost', nearestFirst.totalCost, lifeline.totalCost, (v) => v.toFixed(0)],
   ];
 

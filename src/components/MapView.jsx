@@ -32,15 +32,15 @@ function MapMarker({ x, y, typeColor, severityColor, label, sublabel, pulse, sel
       style={{ cursor: 'pointer' }}
     >
       {selected && (
-        <circle r={22} fill="none" stroke="#60a5fa" strokeWidth={2} strokeDasharray="4 3" />
+        <circle r={26} fill="none" stroke="#60a5fa" strokeWidth={2.5} strokeDasharray="4 3" />
       )}
-      <circle r={16} fill={typeColor} fillOpacity={0.15} stroke={typeColor} strokeWidth={2} />
-      <circle r={6} fill={severityColor} stroke={typeColor} strokeWidth={1.5} />
-      <text y={28} textAnchor="middle" className="marker-label">
+      <circle r={20} fill={typeColor} fillOpacity={0.15} stroke={typeColor} strokeWidth={2.5} />
+      <circle r={8} fill={severityColor} stroke={typeColor} strokeWidth={2} />
+      <text y={32} textAnchor="middle" className="marker-label">
         {label}
       </text>
       {sublabel && (
-        <text y={40} textAnchor="middle" className="marker-sublabel">
+        <text y={46} textAnchor="middle" className="marker-sublabel">
           {sublabel}
         </text>
       )}
@@ -191,9 +191,9 @@ export function MapView({
                 style={{ cursor: 'pointer' }}
               >
                 {isSelected && (
-                  <rect x={-18} y={-18} width={36} height={36} rx={4} fill="none" stroke="#60a5fa" strokeWidth={2} strokeDasharray="4 3" />
+                  <rect x={-22} y={-22} width={44} height={44} rx={5} fill="none" stroke="#60a5fa" strokeWidth={2.5} strokeDasharray="4 3" />
                 )}
-                <rect x={-14} y={-14} width={28} height={28} rx={4} className="facility-icon-bg" />
+                <rect x={-18} y={-18} width={36} height={36} rx={5} className="facility-icon-bg" />
                 <text y={4} textAnchor="middle" className="facility-symbol">
                   {f.status === 'closed' ? '✕' : symbol}
                 </text>
@@ -234,9 +234,9 @@ export function MapView({
                 style={{ cursor: 'pointer' }}
               >
                 {isSelected && (
-                  <rect x={-18} y={-18} width={36} height={36} rx={5} fill="none" stroke="#60a5fa" strokeWidth={2} strokeDasharray="4 3" />
+                  <rect x={-22} y={-22} width={44} height={44} rx={6} fill="none" stroke="#60a5fa" strokeWidth={2.5} strokeDasharray="4 3" />
                 )}
-                <rect x={-14} y={-14} width={28} height={28} rx={5} className="resource-box" />
+                <rect x={-18} y={-18} width={36} height={36} rx={6} className="resource-box" />
                 <text y={4} textAnchor="middle" className="resource-symbol">
                   {unavailable ? '✕' : symbol}
                 </text>

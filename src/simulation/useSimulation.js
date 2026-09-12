@@ -5,7 +5,7 @@ import {
   DEFAULT_SCENARIO_ID,
 } from '../data/scenarios/index.js';
 import { optimize, compareStrategies, STRATEGIES } from '../engine/optimizer.js';
-import { initializeScenario, reoptimizePending } from './assignments.js';
+import { initializeScenario, reoptimizePending, buildDisplayAssignments } from './assignments.js';
 import {
   escalateEmergency,
   deescalateEmergency,
@@ -73,6 +73,19 @@ export function useSimulation() {
     [clearTimers],
   );
 
+  const runEvent = useCallback(
+    (eventFn, message = 'System change detected', options = {}) => {
+      const { reoptimize = true } = options;
+      if (!reoptimize) {
+        setState((prev) => eventFn(prev));
+        showInfo(message);
+        return;
+      }
+      runReoptimize(eventFn, message);
+    },
+    [runReoptimize, showInfo],
+  );
+
   const switchScenario = useCallback(
     (newScenarioId) => {
       clearTimers();
@@ -119,15 +132,14 @@ export function useSimulation() {
   const result = useMemo(() => optimize(state, strategy), [state, strategy]);
   const comparison = useMemo(() => compareStrategies(state), [state]);
 
-  const assignmentMap = useMemo(
-    () => new Map(result.assignments.map((a) => [a.resourceId, a])),
-    [result.assignments],
+  const displayAssignments = useMemo(
+    () => buildDisplayAssignments(state, strategy),
+    [state, strategy],
   );
 
-  const emergencyAssignmentMap = useMemo(
-    () => new Map(result.assignments.map((a) => [a.emergencyId, a])),
-    [result.assignments],
-  );
+  const assignmentMap = displayAssignments.assignmentMap;
+  const emergencyAssignmentMap = displayAssignments.committedEmergencyMap;
+  const mapAssignments = displayAssignments.allAssignments;
 
   const activeEmergencyTypes = useMemo(() => {
     const types = new Set(
@@ -201,10 +213,11 @@ export function useSimulation() {
     notification,
     assignmentMap,
     emergencyAssignmentMap,
+    mapAssignments,
     selected,
     selectEntity,
     clearSelection,
-    runEvent: runReoptimize,
+    runEvent,
     reoptimize,
     resetScenario,
     handleEscalate,

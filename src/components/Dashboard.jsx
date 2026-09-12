@@ -29,6 +29,7 @@ export function Dashboard() {
     notification,
     assignmentMap,
     emergencyAssignmentMap,
+    mapAssignments,
     selected,
     selectEntity,
     clearSelection,
@@ -103,7 +104,7 @@ export function Dashboard() {
             emergencies={state.emergencies}
             facilities={state.facilities}
             blockedRoads={state.blockedRoads}
-            assignments={result.assignments}
+            assignments={mapAssignments}
             assignmentMap={assignmentMap}
             selected={selected}
             onSelect={selectEntity}
@@ -116,6 +117,7 @@ export function Dashboard() {
             onEvent={runEvent}
             onReoptimize={reoptimize}
             onReset={resetScenario}
+            blockedRoads={state.blockedRoads}
             disabled={!!isBusy}
           />
           <AllocationPanel assignments={result.assignments} strategy={strategy} />

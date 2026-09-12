@@ -10,6 +10,8 @@ import { resetAssignments } from './state.js';
 
 /**
  * Extract in-progress assignments from persisted state (units en route).
+ * Uses resource.currentAssignment as source of truth so locked units never
+ * appear reassigned in the UI when severity changes.
  * @param {SimulationState} state
  */
 export function getCommittedAssignments(state) {
@@ -21,7 +23,7 @@ export function getCommittedAssignments(state) {
     if (resource.status !== 'assigned' || !resource.currentAssignment) continue;
 
     const emergency = state.emergencies.find((e) => e.id === resource.currentAssignment);
-    if (!emergency || emergency.status !== 'assigned') continue;
+    if (!emergency || emergency.status === 'resolved') continue;
 
     committed.push({
       resourceId: resource.id,
@@ -33,6 +35,35 @@ export function getCommittedAssignments(state) {
   }
 
   return committed;
+}
+
+/**
+ * Build assignment maps for UI: locked pairs from state, plus pending
+ * optimizer suggestions that do not conflict with committed resources.
+ * @param {SimulationState} state
+ * @param {string} strategy
+ */
+export function buildDisplayAssignments(state, strategy) {
+  const committed = getCommittedAssignments(state);
+  const committedResourceIds = new Set(committed.map((a) => a.resourceId));
+  const committedEmergencyIds = new Set(committed.map((a) => a.emergencyId));
+
+  const result = optimize(state, strategy);
+  const pending = result.assignments.filter(
+    (a) =>
+      !committedResourceIds.has(a.resourceId) && !committedEmergencyIds.has(a.emergencyId),
+  );
+
+  const allAssignments = [...committed, ...pending];
+
+  return {
+    committedAssignments: committed,
+    pendingAssignments: pending,
+    allAssignments,
+    assignmentMap: new Map(allAssignments.map((a) => [a.resourceId, a])),
+    emergencyAssignmentMap: new Map(allAssignments.map((a) => [a.emergencyId, a])),
+    committedEmergencyMap: new Map(committed.map((a) => [a.emergencyId, a])),
+  };
 }
 
 /**

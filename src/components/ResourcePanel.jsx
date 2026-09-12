@@ -50,7 +50,7 @@ export function ResourcePanel({
                 </span>
               </div>
               <div className="entity-meta">
-                <span><strong>{r.location.zone}</strong> · Capacity {r.capacity}</span>
+                <span><strong>{r.location.zone}</strong></span>
                 <span className="entity-needs">{r.capabilities.join(', ')}</span>
               </div>
               {assignment && !isUnavailable && (

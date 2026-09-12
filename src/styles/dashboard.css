@@ -302,6 +302,11 @@
   font-weight: 600;
 }
 
+.distance-location {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
 .distance-units {
   color: #64748b;
   font-weight: 400;
@@ -608,6 +613,8 @@
 .map-panel {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 520px;
   border-bottom: none;
   padding: 0.75rem 1rem 1rem;
 }
@@ -640,18 +647,19 @@
 .dot.low { background: #22c55e; }
 
 .map-container {
+  flex: 1;
   background: #0c1222;
   border: 1px solid #1e293b;
   border-radius: 4px;
   overflow: hidden;
-  height: 340px;
+  min-height: 480px;
+  height: 520px;
 }
 
 .city-map {
   width: 100%;
   height: 100%;
-  min-height: 320px;
-  max-height: 380px;
+  min-height: 480px;
 }
 
 .map-hint {
@@ -668,26 +676,27 @@
 }
 
 .zone-label {
-  fill: #475569;
-  font-size: 11px;
+  fill: #64748b;
+  font-size: 13px;
+  font-weight: 600;
   font-family: system-ui, sans-serif;
 }
 
 .road {
-  stroke: #2d3a4f;
-  stroke-width: 3;
+  stroke: #3d4f6a;
+  stroke-width: 5;
   stroke-linecap: round;
 }
 
 .road.major {
-  stroke: #475569;
-  stroke-width: 5;
+  stroke: #64748b;
+  stroke-width: 8;
 }
 
 .road.blocked {
   stroke: #ef4444;
-  stroke-dasharray: 8 6;
-  stroke-width: 6;
+  stroke-dasharray: 10 8;
+  stroke-width: 10;
 }
 
 .blocked-label {
@@ -699,21 +708,21 @@
 
 .assignment-route {
   stroke: #3b82f6;
-  stroke-width: 2;
-  stroke-dasharray: 6 4;
-  opacity: 0.85;
+  stroke-width: 3.5;
+  stroke-dasharray: 8 5;
+  opacity: 0.9;
 }
 
 .marker-label {
   fill: #cbd5e1;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   font-family: ui-monospace, monospace;
 }
 
 .marker-sublabel {
   fill: #64748b;
-  font-size: 8px;
+  font-size: 10px;
   font-family: system-ui, sans-serif;
   text-transform: uppercase;
 }
@@ -727,8 +736,8 @@
 }
 
 @keyframes marker-pulse {
-  0%, 100% { r: 14; opacity: 0.2; }
-  50% { r: 18; opacity: 0.35; }
+  0%, 100% { r: 18; opacity: 0.2; }
+  50% { r: 24; opacity: 0.35; }
 }
 
 .resource-box {
@@ -749,7 +758,8 @@
 
 .resource-symbol {
   fill: #93c5fd;
-  font-size: 10px;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .facility-icon-bg {
@@ -896,6 +906,40 @@
   gap: 0.4rem;
 }
 
+.road-block-control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid #1e293b;
+  border-bottom: 1px solid #1e293b;
+  margin: 0.15rem 0;
+}
+
+.road-block-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+}
+
+.road-block-select {
+  width: 100%;
+  background: #1e293b;
+  border: 1px solid #475569;
+  color: #f1f5f9;
+  padding: 0.4rem 0.55rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.road-block-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .control-btn {
   display: flex;
   align-items: center;
@@ -935,30 +979,30 @@
 .emergency-panel .entity-list.entity-grid,
 .resource-panel .entity-list.entity-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 0.65rem;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.5rem;
   max-height: none;
   overflow: visible;
 }
 
 .emergency-panel .entity-grid .entity-item,
 .resource-panel .entity-grid .entity-item {
-  padding: 0.7rem 0.75rem;
-  border-radius: 6px;
+  padding: 0.55rem 0.6rem;
+  border-radius: 5px;
   min-width: 0;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
 }
 
 .emergency-panel .entity-grid .entity-row,
 .resource-panel .entity-grid .entity-row {
   flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-bottom: 0.35rem;
+  gap: 0.25rem;
+  margin-bottom: 0.25rem;
 }
 
 .emergency-panel .entity-grid .entity-id,
 .resource-panel .entity-grid .entity-id {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 700;
 }
 
@@ -966,16 +1010,16 @@
 .emergency-panel .entity-grid .type-tag,
 .resource-panel .entity-grid .status-tag,
 .resource-panel .entity-grid .resource-type-tag {
-  font-size: 0.65rem;
-  padding: 0.15rem 0.4rem;
+  font-size: 0.6rem;
+  padding: 0.1rem 0.32rem;
 }
 
 .emergency-panel .entity-grid .entity-meta,
 .resource-panel .entity-grid .entity-meta {
-  font-size: 0.78rem;
-  line-height: 1.45;
+  font-size: 0.7rem;
+  line-height: 1.4;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.12rem;
   color: #94a3b8;
 }
 
@@ -986,74 +1030,94 @@
 
 .entity-needs {
   color: #64748b;
-  font-size: 0.72rem;
+  font-size: 0.65rem;
 }
 
 .emergency-panel .entity-grid .distance-row {
-  margin: 0.4rem 0 0;
-  padding: 0.35rem 0.5rem;
+  margin: 0.28rem 0 0;
+  padding: 0.25rem 0.4rem;
   background: #0f172a;
   border: 1px solid #1e293b;
-  border-radius: 4px;
-  font-size: 0.78rem;
+  border-radius: 3px;
+  font-size: 0.7rem;
 }
 
 .emergency-panel .entity-grid .distance-label {
-  font-size: 0.68rem;
+  font-size: 0.62rem;
 }
 
 .emergency-panel .entity-grid .distance-value {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
 }
 
 .emergency-panel .entity-grid .entity-status,
 .resource-panel .entity-grid .entity-status {
-  font-size: 0.78rem;
-  margin-top: 0.35rem;
+  font-size: 0.68rem;
+  margin-top: 0.25rem;
   color: #cbd5e1;
 }
 
 .emergency-panel .entity-grid .entity-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.35rem;
-  margin-top: 0.55rem;
+  gap: 0.25rem;
+  margin-top: 0.4rem;
 }
 
 .emergency-panel .entity-grid .action-btn.resolve {
   grid-column: 1 / -1;
 }
 
+.emergency-panel .entity-grid .entity-actions:has(.action-btn:only-child) {
+  display: block;
+}
+
+.emergency-panel .entity-grid .entity-actions:has(.action-btn:only-child) .action-btn {
+  width: 100%;
+}
+
 .emergency-panel .entity-grid .action-btn,
 .resource-panel .entity-grid .action-btn {
-  padding: 0.4rem 0.5rem;
-  font-size: 0.7rem;
+  padding: 0.3rem 0.35rem;
+  font-size: 0.62rem;
   justify-content: center;
-  gap: 0.3rem;
+  gap: 0.2rem;
 }
 
 .emergency-panel .entity-grid .action-btn svg,
 .resource-panel .entity-grid .action-btn svg {
-  width: 13px;
-  height: 13px;
+  width: 11px;
+  height: 11px;
   flex-shrink: 0;
 }
 
 .resource-panel .entity-grid .entity-actions {
-  margin-top: 0.55rem;
+  margin-top: 0.4rem;
 }
 
 .resource-panel .entity-grid .action-btn {
   width: 100%;
 }
 
+/* Assigned emergencies — always one row */
+.emergency-assigned-row.entity-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--assigned-count, 1), minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.emergency-upnext-row.entity-grid {
+  margin-top: 0;
+}
+
 .resolved-list.entity-grid {
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
 }
 
 .resolved-list .entity-item {
-  padding: 0.5rem 0.6rem;
-  font-size: 0.78rem;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.7rem;
 }
 
 /* ── Panel polish ── */
