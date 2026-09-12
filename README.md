@@ -1,17 +1,36 @@
-# React + Vite
+# LIFELINE
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+**Real-time optimization for emergency response.**
 
-Currently, two official plugins are available:
+LIFELINE is a hackathon prototype for emergency resource allocation. It helps decision-makers assign limited resources (ambulances, fire trucks, rescue teams, etc.) across multiple competing emergencies using global optimization — not just nearest-first assignment.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+> All data, coordinates, travel times, and severity weights are **simulated demonstration values**, not real EMS protocols.
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Generic resource / emergency / facility data models
+- **Nearest-First** baseline strategy
+- **LIFELINE Optimized** global allocation strategy
+- Command-center dashboard with simulated city map
+- Live metrics and baseline comparison
+- Dynamic simulation controls (block route, disable resource, escalate emergency, etc.)
 
-## Expanding the Oxlint configuration
+## Run locally
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
-# lifeline
+```bash
+npm install
+npm run dev
+```
+
+## Build
+
+```bash
+npm run build
+npm run preview
+```
+
+## Tech stack
+
+- React + Vite
+- JavaScript
+- lucide-react
