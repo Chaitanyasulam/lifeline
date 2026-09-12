@@ -1,5 +1,10 @@
-import { AlertCircle, ArrowUp, ArrowDown, CheckCircle } from 'lucide-react';
+import { AlertCircle, ArrowUp, ArrowDown, CheckCircle, Lock, MapPin } from 'lucide-react';
 import { EMERGENCY_TYPE_LABELS } from '../models/types.js';
+import {
+  getNearestCompatibleTravelTime,
+  getNearestCompatibleDistance,
+} from '../engine/scoring.js';
+import { createRoutingContext } from '../engine/routing.js';
 
 const SEVERITY_CLASS = {
   CRITICAL: 'severity-critical',
@@ -8,8 +13,31 @@ const SEVERITY_CLASS = {
   LOW: 'severity-low',
 };
 
+const SEVERITY_ORDER = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
+
+function getEmergencyDistanceInfo(emergency, assignment, resources, routingContext) {
+  if (assignment) {
+    return {
+      time: assignment.travelTime,
+      distance: assignment.distance ?? null,
+      label: 'En route',
+    };
+  }
+
+  const time = getNearestCompatibleTravelTime(emergency, resources, routingContext);
+  const distance = getNearestCompatibleDistance(emergency, resources, routingContext);
+
+  return {
+    time,
+    distance,
+    label: 'Nearest unit',
+  };
+}
+
 export function EmergencyPanel({
   emergencies,
+  resources,
+  blockedRoads,
   emergencyAssignmentMap,
   selected,
   onSelect,
@@ -19,10 +47,23 @@ export function EmergencyPanel({
   disabled,
   typeFilter = 'all',
 }) {
+  const routingContext = createRoutingContext({ blockedRoads: blockedRoads ?? [] });
+
   const filtered = typeFilter === 'all'
     ? emergencies
     : emergencies.filter((e) => e.type === typeFilter);
-  const active = filtered.filter((e) => e.status !== 'resolved');
+
+  const active = filtered
+    .filter((e) => e.status !== 'resolved')
+    .sort((a, b) => {
+      const severityDiff = SEVERITY_ORDER[b.severity] - SEVERITY_ORDER[a.severity];
+      if (severityDiff !== 0) return severityDiff;
+
+      const distA = getNearestCompatibleTravelTime(a, resources, routingContext) ?? Infinity;
+      const distB = getNearestCompatibleTravelTime(b, resources, routingContext) ?? Infinity;
+      return distA - distB;
+    });
+
   const resolved = filtered.filter((e) => e.status === 'resolved');
 
   return (
@@ -36,17 +77,23 @@ export function EmergencyPanel({
         )}
       </div>
 
+      <p className="panel-hint">
+        Sorted by severity, then distance. Distance shown for all calls — en route and waiting.
+      </p>
+
       <ul className="entity-list">
         {active.map((e) => {
           const assignment = emergencyAssignmentMap.get(e.id);
+          const isEnRoute = e.status === 'assigned' && assignment;
           const isSelected = selected?.type === 'emergency' && selected.id === e.id;
           const atMaxSeverity = e.severity === 'CRITICAL';
           const atMinSeverity = e.severity === 'LOW';
+          const distInfo = getEmergencyDistanceInfo(e, assignment, resources, routingContext);
 
           return (
             <li
               key={e.id}
-              className={`entity-item selectable ${SEVERITY_CLASS[e.severity]} ${isSelected ? 'selected' : ''}`}
+              className={`entity-item selectable ${SEVERITY_CLASS[e.severity]} ${isSelected ? 'selected' : ''} ${isEnRoute ? 'en-route' : ''}`}
               onClick={() => onSelect('emergency', e.id)}
               onKeyDown={(ev) => ev.key === 'Enter' && onSelect('emergency', e.id)}
               role="button"
@@ -54,22 +101,39 @@ export function EmergencyPanel({
             >
               <div className="entity-row">
                 <span className="entity-id">{e.id}</span>
-                <span className={`type-tag type-${e.type}`}>
-                  {EMERGENCY_TYPE_LABELS[e.type]}
-                </span>
                 <span className={`severity-tag ${SEVERITY_CLASS[e.severity]}`}>
                   {e.severity}
                 </span>
+                <span className={`type-tag type-${e.type}`}>
+                  {EMERGENCY_TYPE_LABELS[e.type]}
+                </span>
               </div>
               <div className="entity-meta">
-                <span>Needs: {e.requiredCapabilities.join(', ')}</span>
-                <span>{e.location.zone}</span>
                 <span>{e.peopleAffected} affected</span>
+                <span>{e.location.zone}</span>
+                <span>Needs: {e.requiredCapabilities.join(', ')}</span>
               </div>
+
+              <div className="distance-row">
+                <MapPin size={11} />
+                <span className="distance-label">{distInfo.label}:</span>
+                <span className="distance-value">
+                  {distInfo.time != null ? `${distInfo.time} min` : '—'}
+                  {distInfo.distance != null && (
+                    <span className="distance-units"> · {distInfo.distance} units</span>
+                  )}
+                </span>
+              </div>
+
               <div className="entity-status">
-                {assignment
-                  ? `Assigned → ${assignment.resourceId} (${assignment.travelTime} min)`
-                  : 'Waiting for compatible resource'}
+                {isEnRoute ? (
+                  <>
+                    <Lock size={11} />
+                    <span>Assigned → {assignment.resourceId}</span>
+                  </>
+                ) : (
+                  'Waiting for compatible resource'
+                )}
               </div>
 
               <div className="entity-actions" onClick={(ev) => ev.stopPropagation()}>

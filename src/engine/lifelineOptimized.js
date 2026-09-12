@@ -73,7 +73,13 @@ export function lifelineOptimizedAssign(resources, emergencies, routingContext) 
       distance: pair.distance,
     }));
 
-    const { totalCost } = scoreAllocation(assignments, active);
+    const usedResourceIds = new Set(assignments.map((a) => a.resourceId));
+    const remainingResources = resources.filter((r) => !usedResourceIds.has(r.id));
+
+    const { totalCost } = scoreAllocation(assignments, active, {
+      resources: remainingResources,
+      routingContext,
+    });
     if (totalCost < bestScore) {
       bestScore = totalCost;
       bestAssignments = assignments;

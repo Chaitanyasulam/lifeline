@@ -1,4 +1,4 @@
-import { AlertTriangle, CheckCircle, Loader2 } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Loader2, Info } from 'lucide-react';
 
 export function SystemNotification({ notification }) {
   if (!notification) return null;
@@ -23,6 +23,12 @@ export function SystemNotification({ notification }) {
         <>
           <CheckCircle size={16} />
           <span>✓ {message ?? 'NEW ALLOCATION FOUND'}</span>
+        </>
+      )}
+      {phase === 'info' && (
+        <>
+          <Info size={16} />
+          <span>{message}</span>
         </>
       )}
     </div>

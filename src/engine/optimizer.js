@@ -4,6 +4,7 @@ import { nearestFirstAssign } from './nearestFirst.js';
 import { lifelineOptimizedAssign } from './lifelineOptimized.js';
 import { calculateMetrics } from './metrics.js';
 import { scoreAllocation } from './scoring.js';
+import { getTravelTime, getTravelDistance } from './travelTime.js';
 
 /**
  * @typedef {import('../models/Resource.js').Resource} Resource
@@ -32,7 +33,34 @@ import { scoreAllocation } from './scoring.js';
  */
 
 /**
- * Run the allocation optimizer for the given strategy.
+ * Build committed (locked) assignment pairs from state.
+ * @param {SimulationState} state
+ * @param {ReturnType<typeof createRoutingContext>} routingContext
+ */
+function getCommittedFromState(state, routingContext) {
+  /** @type {AssignmentPair[]} */
+  const committed = [];
+
+  for (const resource of state.resources) {
+    if (resource.status !== 'assigned' || !resource.currentAssignment) continue;
+    const emergency = state.emergencies.find((e) => e.id === resource.currentAssignment);
+    if (!emergency || emergency.status !== 'assigned') continue;
+
+    committed.push({
+      resourceId: resource.id,
+      emergencyId: emergency.id,
+      travelTime: round(getTravelTime(resource.location, emergency.location, routingContext)),
+      distance: round(getTravelDistance(resource.location, emergency.location, routingContext)),
+      locked: true,
+    });
+  }
+
+  return committed;
+}
+
+/**
+ * Run the allocation optimizer. Respects in-progress (committed) assignments —
+ * only available resources are assigned to active (unassigned) emergencies.
  *
  * @param {SimulationState} state
  * @param {keyof typeof STRATEGIES | string} strategy
@@ -43,23 +71,34 @@ export function optimize(state, strategy = STRATEGIES.LIFELINE_OPTIMIZED) {
     blockedRoads: state.blockedRoads ?? [],
   });
 
-  const activeEmergencies = state.emergencies.filter((e) => e.status === 'active');
+  const committed = getCommittedFromState(state, routingContext);
 
-  let assignments;
+  const availableResources = state.resources.filter((r) => r.status === 'available');
+  const pendingEmergencies = state.emergencies.filter((e) => e.status === 'active');
+  const allOpenEmergencies = state.emergencies.filter(
+    (e) => e.status === 'active' || e.status === 'assigned',
+  );
+
+  let newAssignments;
   if (strategy === STRATEGIES.NEAREST_FIRST) {
-    assignments = nearestFirstAssign(state.resources, activeEmergencies, routingContext);
+    newAssignments = nearestFirstAssign(availableResources, pendingEmergencies, routingContext);
   } else {
-    assignments = lifelineOptimizedAssign(state.resources, activeEmergencies, routingContext);
+    newAssignments = lifelineOptimizedAssign(availableResources, pendingEmergencies, routingContext);
   }
+
+  const assignments = [...committed, ...newAssignments];
 
   const metrics = calculateMetrics(
     assignments,
-    activeEmergencies,
+    allOpenEmergencies,
     state.resources,
     { blockedRoads: state.blockedRoads ?? [] },
   );
 
-  const { totalCost } = scoreAllocation(assignments, activeEmergencies);
+  const { totalCost } = scoreAllocation(assignments, allOpenEmergencies, {
+    resources: state.resources,
+    routingContext,
+  });
 
   return {
     strategy,

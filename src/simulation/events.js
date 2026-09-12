@@ -82,12 +82,12 @@ export function deescalateEmergency(state, emergencyId) {
  * @param {string} emergencyId
  * @param {AssignmentPair[]} [currentAssignments]
  */
-export function resolveEmergency(state, emergencyId, currentAssignments = []) {
+export function resolveEmergency(state, emergencyId) {
   const emergency = state.emergencies.find((e) => e.id === emergencyId);
   if (!emergency || emergency.status === 'resolved') return state;
 
-  const assignment = currentAssignments.find((a) => a.emergencyId === emergencyId);
-  const assignedResourceId = assignment?.resourceId ?? null;
+  const assignedResource = state.resources.find((r) => r.currentAssignment === emergencyId);
+  const assignedResourceId = assignedResource?.id ?? null;
 
   return {
     ...state,
@@ -96,7 +96,6 @@ export function resolveEmergency(state, emergencyId, currentAssignments = []) {
     ),
     resources: state.resources.map((r) => {
       if (r.status === 'unavailable') return r;
-
       if (assignedResourceId && r.id === assignedResourceId) {
         return {
           ...r,
@@ -105,8 +104,7 @@ export function resolveEmergency(state, emergencyId, currentAssignments = []) {
           location: { ...emergency.location },
         };
       }
-
-      return { ...r, currentAssignment: null };
+      return r;
     }),
   };
 }
@@ -116,12 +114,18 @@ export function resolveEmergency(state, emergencyId, currentAssignments = []) {
  * @param {string} resourceId
  */
 export function disableResource(state, resourceId) {
+  const resource = state.resources.find((r) => r.id === resourceId);
+  const emergencyId = resource?.currentAssignment ?? null;
+
   return {
     ...state,
     resources: state.resources.map((r) =>
       r.id === resourceId
         ? { ...r, status: 'unavailable', currentAssignment: null }
         : r,
+    ),
+    emergencies: state.emergencies.map((e) =>
+      e.id === emergencyId ? { ...e, status: 'active' } : e,
     ),
   };
 }

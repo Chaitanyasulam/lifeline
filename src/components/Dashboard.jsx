@@ -42,7 +42,11 @@ export function Dashboard() {
     resolvedCount,
   } = useSimulation();
 
-  const isBusy = notification && notification.phase !== 'complete' && notification.phase !== undefined;
+  const isBusy =
+    notification &&
+    notification.phase !== 'complete' &&
+    notification.phase !== 'info' &&
+    notification.phase !== undefined;
 
   return (
     <div className="dashboard">
@@ -70,9 +74,11 @@ export function Dashboard() {
       />
 
       <div className="dashboard-body">
-        <aside className="sidebar left">
+        <div className="dashboard-left">
           <EmergencyPanel
             emergencies={state.emergencies}
+            resources={state.resources}
+            blockedRoads={state.blockedRoads}
             emergencyAssignmentMap={emergencyAssignmentMap}
             selected={selected}
             onSelect={selectEntity}
@@ -82,14 +88,16 @@ export function Dashboard() {
             disabled={!!isBusy}
             typeFilter={emergencyTypeFilter}
           />
-          <FacilityPanel
-            facilities={state.facilities}
+
+          <ResourcePanel
+            resources={state.resources}
+            assignmentMap={assignmentMap}
             selected={selected}
             onSelect={selectEntity}
+            onToggleAvailability={handleToggleResource}
+            disabled={!!isBusy}
           />
-        </aside>
 
-        <main className="center-column">
           <MapView
             resources={state.resources}
             emergencies={state.emergencies}
@@ -101,18 +109,21 @@ export function Dashboard() {
             onSelect={selectEntity}
             emergencyTypeFilter={emergencyTypeFilter}
           />
-        </main>
+        </div>
 
-        <aside className="sidebar right">
-          <ResourcePanel
-            resources={state.resources}
-            assignmentMap={assignmentMap}
-            selected={selected}
-            onSelect={selectEntity}
-            onToggleAvailability={handleToggleResource}
+        <aside className="dashboard-right">
+          <SimulationControls
+            onEvent={runEvent}
+            onReoptimize={reoptimize}
+            onReset={resetScenario}
             disabled={!!isBusy}
           />
           <AllocationPanel assignments={result.assignments} strategy={strategy} />
+          <FacilityPanel
+            facilities={state.facilities}
+            selected={selected}
+            onSelect={selectEntity}
+          />
         </aside>
       </div>
 
@@ -120,13 +131,6 @@ export function Dashboard() {
         <MetricsPanel metrics={result.metrics} />
         <ComparisonPanel comparison={comparison} />
       </div>
-
-      <SimulationControls
-        onEvent={runEvent}
-        onReoptimize={reoptimize}
-        onReset={resetScenario}
-        disabled={!!isBusy}
-      />
     </div>
   );
 }
