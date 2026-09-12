@@ -23,7 +23,7 @@ const CONTROLS = [
     label: 'Block Route',
     icon: Construction,
     event: DEMO_EVENTS.blockRoute,
-    message: 'Major route blocked on Central Ave',
+    message: 'Central Ave blocked — rerouting all units',
   },
   {
     id: 'disableResource',

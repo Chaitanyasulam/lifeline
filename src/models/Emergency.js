@@ -1,13 +1,16 @@
+import { getEmergencyCapabilities } from './types.js';
+
 /**
  * @typedef {import('./constants.js').SeverityLevel} SeverityLevel
  * @typedef {import('./constants.js').EmergencyStatus} EmergencyStatus
  * @typedef {import('./Resource.js').Location} Location
+ * @typedef {import('./types.js').EmergencyType} EmergencyType
  */
 
 /**
  * @typedef {Object} Emergency
  * @property {string} id
- * @property {string} type
+ * @property {EmergencyType} type
  * @property {Location} location
  * @property {SeverityLevel} severity
  * @property {string[]} requiredCapabilities
@@ -25,7 +28,8 @@ export function createEmergency(props) {
     type: props.type,
     location: props.location,
     severity: props.severity,
-    requiredCapabilities: props.requiredCapabilities ?? [],
+    requiredCapabilities:
+      props.requiredCapabilities ?? getEmergencyCapabilities(props.type),
     peopleAffected: props.peopleAffected ?? 1,
     status: props.status ?? 'active',
   };

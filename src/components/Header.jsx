@@ -1,14 +1,14 @@
 import { Activity } from 'lucide-react';
 import { STRATEGIES } from '../engine/optimizer.js';
 
-export function Header({ strategy, onStrategyChange }) {
+export function Header({ strategy, onStrategyChange, resolvedCount = 0 }) {
   return (
     <header className="dashboard-header">
       <div className="header-brand">
         <Activity className="brand-icon" size={22} />
         <div>
           <h1>LIFELINE</h1>
-          <p>Real-Time Emergency Resource Optimization</p>
+          <p>Multi-Agency Emergency Resource Optimization</p>
         </div>
       </div>
 
@@ -18,6 +18,9 @@ export function Header({ strategy, onStrategyChange }) {
           System Status: OPTIMIZED
         </div>
         <div className="simulated-badge">Simulated scenario</div>
+        {resolvedCount > 0 && (
+          <div className="resolved-badge">{resolvedCount} resolved</div>
+        )}
       </div>
 
       <div className="strategy-toggle">

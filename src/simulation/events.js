@@ -4,12 +4,17 @@ import { ROADS, EMERGENCY_SPAWN_POINTS, MOVE_TARGETS } from '../data/mapData.js'
 /**
  * @typedef {import('../engine/optimizer.js').SimulationState} SimulationState
  * @typedef {import('../models/Resource.js').Location} Location
+ * @typedef {import('../engine/scoring.js').AssignmentPair} AssignmentPair
  */
 
 const SEVERITY_ORDER = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
 const SEVERITY_OPTIONS = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
 
-let emergencyCounter = 7;
+let emergencyCounter = 9;
+
+export function resetEmergencyCounter() {
+  emergencyCounter = 9;
+}
 
 /**
  * @param {SimulationState} state
@@ -47,7 +52,61 @@ export function escalateEmergency(state, emergencyId) {
     emergencies: state.emergencies.map((e) => {
       if (e.id !== emergencyId || e.status === 'resolved') return e;
       const idx = SEVERITY_ORDER.indexOf(e.severity);
-      return { ...e, severity: SEVERITY_ORDER[Math.min(idx + 1, SEVERITY_ORDER.length - 1)] };
+      if (idx >= SEVERITY_ORDER.length - 1) return e;
+      return { ...e, severity: SEVERITY_ORDER[idx + 1] };
+    }),
+  };
+}
+
+/**
+ * @param {SimulationState} state
+ * @param {string} emergencyId
+ */
+export function deescalateEmergency(state, emergencyId) {
+  return {
+    ...state,
+    emergencies: state.emergencies.map((e) => {
+      if (e.id !== emergencyId || e.status === 'resolved') return e;
+      const idx = SEVERITY_ORDER.indexOf(e.severity);
+      if (idx <= 0) return e;
+      return { ...e, severity: SEVERITY_ORDER[idx - 1] };
+    }),
+  };
+}
+
+/**
+ * Mark an emergency as resolved. If a resource was assigned, move it to the
+ * emergency location so it can be reallocated to the next call.
+ *
+ * @param {SimulationState} state
+ * @param {string} emergencyId
+ * @param {AssignmentPair[]} [currentAssignments]
+ */
+export function resolveEmergency(state, emergencyId, currentAssignments = []) {
+  const emergency = state.emergencies.find((e) => e.id === emergencyId);
+  if (!emergency || emergency.status === 'resolved') return state;
+
+  const assignment = currentAssignments.find((a) => a.emergencyId === emergencyId);
+  const assignedResourceId = assignment?.resourceId ?? null;
+
+  return {
+    ...state,
+    emergencies: state.emergencies.map((e) =>
+      e.id === emergencyId ? { ...e, status: 'resolved' } : e,
+    ),
+    resources: state.resources.map((r) => {
+      if (r.status === 'unavailable') return r;
+
+      if (assignedResourceId && r.id === assignedResourceId) {
+        return {
+          ...r,
+          status: 'available',
+          currentAssignment: null,
+          location: { ...emergency.location },
+        };
+      }
+
+      return { ...r, currentAssignment: null };
     }),
   };
 }
@@ -70,6 +129,34 @@ export function disableResource(state, resourceId) {
 /**
  * @param {SimulationState} state
  * @param {string} resourceId
+ */
+export function enableResource(state, resourceId) {
+  return {
+    ...state,
+    resources: state.resources.map((r) =>
+      r.id === resourceId
+        ? { ...r, status: 'available', currentAssignment: null }
+        : r,
+    ),
+  };
+}
+
+/**
+ * Toggle a resource between available and unavailable.
+ * @param {SimulationState} state
+ * @param {string} resourceId
+ */
+export function toggleResourceAvailability(state, resourceId) {
+  const resource = state.resources.find((r) => r.id === resourceId);
+  if (!resource) return state;
+  return resource.status === 'unavailable'
+    ? enableResource(state, resourceId)
+    : disableResource(state, resourceId);
+}
+
+/**
+ * @param {SimulationState} state
+ * @param {string} resourceId
  * @param {Location} location
  */
 export function moveResource(state, resourceId, location) {
@@ -87,7 +174,7 @@ export function moveResource(state, resourceId, location) {
  * @param {SimulationState} state
  * @param {string} [roadId]
  */
-export function blockRoute(state, roadId = 'R1') {
+export function blockRoute(state, roadId = 'H2') {
   const road = ROADS.find((r) => r.id === roadId);
   if (!road) return state;
 
@@ -120,7 +207,7 @@ export function closeFacility(state, facilityId) {
 
 /** Demo event presets for presenter */
 export const DEMO_EVENTS = {
-  blockRoute: (state) => blockRoute(state, 'R1'),
+  blockRoute: (state) => blockRoute(state, 'H2'),
   disableAmbulance: (state) => disableResource(state, 'A03'),
   escalateEmergency: (state) => escalateEmergency(state, 'E05'),
   addEmergency: (state) =>

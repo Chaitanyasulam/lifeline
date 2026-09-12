@@ -1,4 +1,9 @@
 import { MAP_WIDTH, MAP_HEIGHT, ZONES, ROADS } from '../data/mapData.js';
+import {
+  EMERGENCY_TYPE_COLORS,
+  EMERGENCY_TYPE_LABELS,
+  RESOURCE_TYPE_SYMBOLS,
+} from '../models/types.js';
 
 const SEVERITY_COLOR = {
   CRITICAL: '#ef4444',
@@ -18,22 +23,38 @@ function isRoadBlocked(road, blockedRoads) {
   );
 }
 
-function MapMarker({ x, y, color, label, sublabel, pulse }) {
+function MapMarker({ x, y, typeColor, severityColor, label, sublabel, pulse, selected, onClick }) {
   return (
-    <g className={`map-marker ${pulse ? 'pulse' : ''}`} transform={`translate(${x}, ${y})`}>
-      <circle r={14} fill={color} fillOpacity={0.2} stroke={color} strokeWidth={2} />
-      <circle r={5} fill={color} />
-      <text y={26} textAnchor="middle" className="marker-label">
+    <g
+      className={`map-marker ${pulse ? 'pulse' : ''} ${selected ? 'selected' : ''} clickable`}
+      transform={`translate(${x}, ${y})`}
+      onClick={onClick}
+      style={{ cursor: 'pointer' }}
+    >
+      {selected && (
+        <circle r={22} fill="none" stroke="#60a5fa" strokeWidth={2} strokeDasharray="4 3" />
+      )}
+      <circle r={16} fill={typeColor} fillOpacity={0.15} stroke={typeColor} strokeWidth={2} />
+      <circle r={6} fill={severityColor} stroke={typeColor} strokeWidth={1.5} />
+      <text y={28} textAnchor="middle" className="marker-label">
         {label}
       </text>
       {sublabel && (
-        <text y={38} textAnchor="middle" className="marker-sublabel">
+        <text y={40} textAnchor="middle" className="marker-sublabel">
           {sublabel}
         </text>
       )}
     </g>
   );
 }
+
+const FACILITY_SYMBOLS = {
+  Hospital: 'H',
+  'Fire Station': 'FS',
+  Shelter: 'SH',
+  'Emergency Operations Center': 'EOC',
+  'Relief Center': 'RC',
+};
 
 export function MapView({
   resources,
@@ -42,7 +63,16 @@ export function MapView({
   blockedRoads,
   assignments,
   assignmentMap,
+  selected,
+  onSelect,
+  emergencyTypeFilter = 'all',
 }) {
+  const visibleEmergencies = emergencies.filter((e) => {
+    if (e.status === 'resolved') return false;
+    if (emergencyTypeFilter === 'all') return true;
+    return e.type === emergencyTypeFilter;
+  });
+
   const assignedEmergencyIds = new Set(assignments.map((a) => a.emergencyId));
 
   return (
@@ -50,10 +80,13 @@ export function MapView({
       <div className="panel-title map-title">
         <span>Simulated City Map</span>
         <div className="map-legend">
-          <span><i className="dot critical" /> Critical</span>
-          <span><i className="dot high" /> High</span>
-          <span><i className="dot medium" /> Medium</span>
-          <span><i className="dot low" /> Low</span>
+          <span className="legend-group">Types:</span>
+          {Object.entries(EMERGENCY_TYPE_LABELS).slice(0, 4).map(([key, label]) => (
+            <span key={key}>
+              <i className="dot" style={{ background: EMERGENCY_TYPE_COLORS[key] }} /> {label}
+            </span>
+          ))}
+          <span className="map-hint">Click markers to select</span>
         </div>
       </div>
 
@@ -109,7 +142,7 @@ export function MapView({
                   y2={road.to.y}
                   className={`road ${road.major ? 'major' : ''} ${blocked ? 'blocked' : ''}`}
                 />
-                {blocked && (
+                {blocked && road.major && (
                   <text
                     x={(road.from.x + road.to.x) / 2}
                     y={(road.from.y + road.to.y) / 2 - 8}
@@ -127,6 +160,12 @@ export function MapView({
             const resource = resources.find((r) => r.id === a.resourceId);
             const emergency = emergencies.find((e) => e.id === a.emergencyId);
             if (!resource || !emergency) return null;
+            if (emergencyTypeFilter !== 'all' && emergency.type !== emergencyTypeFilter) return null;
+
+            const isHighlighted =
+              (selected?.type === 'resource' && selected.id === a.resourceId) ||
+              (selected?.type === 'emergency' && selected.id === a.emergencyId);
+
             return (
               <line
                 key={`route-${a.resourceId}-${a.emergencyId}`}
@@ -134,68 +173,74 @@ export function MapView({
                 y1={resource.location.y}
                 x2={emergency.location.x}
                 y2={emergency.location.y}
-                className="assignment-route"
+                className={`assignment-route ${isHighlighted ? 'highlighted' : ''}`}
                 filter="url(#glow)"
               />
             );
           })}
 
-          {facilities.map((f) => (
-            <g
-              key={f.id}
-              transform={`translate(${f.location.x}, ${f.location.y})`}
-              className={f.status === 'closed' ? 'facility-closed' : 'facility-open'}
-            >
-              <rect x={-12} y={-12} width={24} height={24} rx={4} className="facility-icon-bg" />
-              <text y={4} textAnchor="middle" className="facility-icon">
-                {f.status === 'closed' ? '✕' : '+'}
-              </text>
-              <text y={22} textAnchor="middle" className="marker-label">
-                {f.id}
-              </text>
-              {f.status === 'closed' && (
-                <text y={34} textAnchor="middle" className="marker-sublabel closed-tag">
-                  CLOSED
+          {facilities.map((f) => {
+            const isSelected = selected?.type === 'facility' && selected.id === f.id;
+            const symbol = FACILITY_SYMBOLS[f.type] ?? 'F';
+            return (
+              <g
+                key={f.id}
+                transform={`translate(${f.location.x}, ${f.location.y})`}
+                className={`facility-marker clickable ${f.status === 'closed' ? 'facility-closed' : 'facility-open'} ${isSelected ? 'selected' : ''}`}
+                onClick={() => onSelect('facility', f.id)}
+                style={{ cursor: 'pointer' }}
+              >
+                {isSelected && (
+                  <rect x={-18} y={-18} width={36} height={36} rx={4} fill="none" stroke="#60a5fa" strokeWidth={2} strokeDasharray="4 3" />
+                )}
+                <rect x={-14} y={-14} width={28} height={28} rx={4} className="facility-icon-bg" />
+                <text y={4} textAnchor="middle" className="facility-symbol">
+                  {f.status === 'closed' ? '✕' : symbol}
                 </text>
-              )}
-            </g>
-          ))}
+                <text y={24} textAnchor="middle" className="marker-label">
+                  {f.id}
+                </text>
+              </g>
+            );
+          })}
 
-          {emergencies
-            .filter((e) => e.status !== 'resolved')
-            .map((e) => (
-              <MapMarker
-                key={e.id}
-                x={e.location.x}
-                y={e.location.y}
-                color={SEVERITY_COLOR[e.severity]}
-                label={e.id}
-                sublabel={e.severity}
-                pulse={!assignedEmergencyIds.has(e.id) && e.severity === 'CRITICAL'}
-              />
-            ))}
+          {visibleEmergencies.map((e) => (
+            <MapMarker
+              key={e.id}
+              x={e.location.x}
+              y={e.location.y}
+              typeColor={EMERGENCY_TYPE_COLORS[e.type] ?? '#94a3b8'}
+              severityColor={SEVERITY_COLOR[e.severity]}
+              label={e.id}
+              sublabel={`${EMERGENCY_TYPE_LABELS[e.type]?.slice(0, 3) ?? e.type} · ${e.severity.slice(0, 1)}`}
+              pulse={!assignedEmergencyIds.has(e.id) && e.severity === 'CRITICAL'}
+              selected={selected?.type === 'emergency' && selected.id === e.id}
+              onClick={() => onSelect('emergency', e.id)}
+            />
+          ))}
 
           {resources.map((r) => {
             const assigned = assignmentMap.has(r.id);
             const unavailable = r.status === 'unavailable';
+            const isSelected = selected?.type === 'resource' && selected.id === r.id;
+            const symbol = RESOURCE_TYPE_SYMBOLS[r.type] ?? 'R';
+
             return (
               <g
                 key={r.id}
                 transform={`translate(${r.location.x}, ${r.location.y})`}
-                className={`resource-marker ${unavailable ? 'unavailable' : assigned ? 'assigned' : 'available'}`}
+                className={`resource-marker clickable ${unavailable ? 'unavailable' : assigned ? 'assigned' : 'available'} ${isSelected ? 'selected' : ''}`}
+                onClick={() => onSelect('resource', r.id)}
+                style={{ cursor: 'pointer' }}
               >
-                <rect
-                  x={-13}
-                  y={-13}
-                  width={26}
-                  height={26}
-                  rx={5}
-                  className="resource-box"
-                />
+                {isSelected && (
+                  <rect x={-18} y={-18} width={36} height={36} rx={5} fill="none" stroke="#60a5fa" strokeWidth={2} strokeDasharray="4 3" />
+                )}
+                <rect x={-14} y={-14} width={28} height={28} rx={5} className="resource-box" />
                 <text y={4} textAnchor="middle" className="resource-symbol">
-                  {unavailable ? '✕' : '⬤'}
+                  {unavailable ? '✕' : symbol}
                 </text>
-                <text y={24} textAnchor="middle" className="marker-label">
+                <text y={26} textAnchor="middle" className="marker-label">
                   {r.id}
                 </text>
               </g>

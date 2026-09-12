@@ -1,12 +1,15 @@
+import { getFacilityCapabilities } from './types.js';
+
 /**
  * @typedef {import('./constants.js').FacilityStatus} FacilityStatus
  * @typedef {import('./Resource.js').Location} Location
+ * @typedef {import('./types.js').FacilityType} FacilityType
  */
 
 /**
  * @typedef {Object} Facility
  * @property {string} id
- * @property {string} type
+ * @property {FacilityType} type
  * @property {Location} location
  * @property {string[]} capabilities
  * @property {FacilityStatus} status
@@ -21,7 +24,7 @@ export function createFacility(props) {
     id: props.id,
     type: props.type,
     location: props.location,
-    capabilities: props.capabilities ?? [],
+    capabilities: props.capabilities ?? getFacilityCapabilities(props.type),
     status: props.status ?? 'open',
   };
 }

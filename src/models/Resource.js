@@ -1,3 +1,5 @@
+import { getResourceCapabilities } from './types.js';
+
 /**
  * @typedef {Object} Location
  * @property {number} x
@@ -6,11 +8,16 @@
  */
 
 /**
+ * @typedef {import('./types.js').ResourceType} ResourceType
+ * @typedef {import('./constants.js').ResourceStatus} ResourceStatus
+ */
+
+/**
  * @typedef {Object} Resource
  * @property {string} id
- * @property {string} type
+ * @property {ResourceType | string} type
  * @property {Location} location
- * @property {import('./constants.js').ResourceStatus} status
+ * @property {ResourceStatus} status
  * @property {number} capacity
  * @property {string[]} capabilities
  * @property {string | null} currentAssignment
@@ -21,13 +28,14 @@
  * @returns {Resource}
  */
 export function createResource(props) {
+  const type = /** @type {ResourceType} */ (props.type);
   return {
     id: props.id,
     type: props.type,
     location: props.location,
     status: props.status ?? 'available',
     capacity: props.capacity ?? 1,
-    capabilities: props.capabilities ?? [],
+    capabilities: props.capabilities ?? getResourceCapabilities(type),
     currentAssignment: props.currentAssignment ?? null,
   };
 }
