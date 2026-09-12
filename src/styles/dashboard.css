@@ -931,19 +931,135 @@
   color: #64748b;
 }
 
+/* ── Compact card grid (emergencies & resources) ── */
+.emergency-panel .entity-list.entity-grid,
+.resource-panel .entity-list.entity-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.65rem;
+  max-height: none;
+  overflow: visible;
+}
+
+.emergency-panel .entity-grid .entity-item,
+.resource-panel .entity-grid .entity-item {
+  padding: 0.7rem 0.75rem;
+  border-radius: 6px;
+  min-width: 0;
+  font-size: 0.8125rem;
+}
+
+.emergency-panel .entity-grid .entity-row,
+.resource-panel .entity-grid .entity-row {
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.emergency-panel .entity-grid .entity-id,
+.resource-panel .entity-grid .entity-id {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.emergency-panel .entity-grid .severity-tag,
+.emergency-panel .entity-grid .type-tag,
+.resource-panel .entity-grid .status-tag,
+.resource-panel .entity-grid .resource-type-tag {
+  font-size: 0.65rem;
+  padding: 0.15rem 0.4rem;
+}
+
+.emergency-panel .entity-grid .entity-meta,
+.resource-panel .entity-grid .entity-meta {
+  font-size: 0.78rem;
+  line-height: 1.45;
+  flex-direction: column;
+  gap: 0.2rem;
+  color: #94a3b8;
+}
+
+.emergency-panel .entity-grid .entity-meta strong,
+.resource-panel .entity-grid .entity-meta strong {
+  color: #e2e8f0;
+}
+
+.entity-needs {
+  color: #64748b;
+  font-size: 0.72rem;
+}
+
+.emergency-panel .entity-grid .distance-row {
+  margin: 0.4rem 0 0;
+  padding: 0.35rem 0.5rem;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 4px;
+  font-size: 0.78rem;
+}
+
+.emergency-panel .entity-grid .distance-label {
+  font-size: 0.68rem;
+}
+
+.emergency-panel .entity-grid .distance-value {
+  font-size: 0.85rem;
+}
+
+.emergency-panel .entity-grid .entity-status,
+.resource-panel .entity-grid .entity-status {
+  font-size: 0.78rem;
+  margin-top: 0.35rem;
+  color: #cbd5e1;
+}
+
+.emergency-panel .entity-grid .entity-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem;
+  margin-top: 0.55rem;
+}
+
+.emergency-panel .entity-grid .action-btn.resolve {
+  grid-column: 1 / -1;
+}
+
+.emergency-panel .entity-grid .action-btn,
+.resource-panel .entity-grid .action-btn {
+  padding: 0.4rem 0.5rem;
+  font-size: 0.7rem;
+  justify-content: center;
+  gap: 0.3rem;
+}
+
+.emergency-panel .entity-grid .action-btn svg,
+.resource-panel .entity-grid .action-btn svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+.resource-panel .entity-grid .entity-actions {
+  margin-top: 0.55rem;
+}
+
+.resource-panel .entity-grid .action-btn {
+  width: 100%;
+}
+
+.resolved-list.entity-grid {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+.resolved-list .entity-item {
+  padding: 0.5rem 0.6rem;
+  font-size: 0.78rem;
+}
+
 /* ── Panel polish ── */
 .emergency-panel,
 .resource-panel {
   border-bottom: 1px solid #1e293b;
-}
-
-.entity-list {
-  max-height: 340px;
-  overflow-y: auto;
-}
-
-.resource-panel .entity-list {
-  max-height: 220px;
 }
 
 .dashboard-right .panel {
@@ -988,8 +1104,4 @@
     grid-template-columns: repeat(3, 1fr);
   }
 
-  .entity-list,
-  .resource-panel .entity-list {
-    max-height: none;
-  }
 }

@@ -22,7 +22,7 @@ export function ResourcePanel({
         <span className="count">{resources.length}</span>
       </div>
 
-      <ul className="entity-list">
+      <ul className="entity-list entity-grid">
         {resources.map((r) => {
           const assignment = assignmentMap.get(r.id);
           const isUnavailable = r.status === 'unavailable';
@@ -50,15 +50,12 @@ export function ResourcePanel({
                 </span>
               </div>
               <div className="entity-meta">
-                <span>{r.location.zone}</span>
-                <span>Cap: {r.capacity}</span>
-              </div>
-              <div className="entity-capabilities">
-                Capabilities: {r.capabilities.join(', ')}
+                <span><strong>{r.location.zone}</strong> · Capacity {r.capacity}</span>
+                <span className="entity-needs">{r.capabilities.join(', ')}</span>
               </div>
               {assignment && !isUnavailable && (
                 <div className="entity-status">
-                  → {assignment.emergencyId} ({assignment.travelTime} min)
+                  Assigned → {assignment.emergencyId} ({assignment.travelTime} min)
                 </div>
               )}
 

@@ -77,11 +77,7 @@ export function EmergencyPanel({
         )}
       </div>
 
-      <p className="panel-hint">
-        Sorted by severity, then distance. Distance shown for all calls — en route and waiting.
-      </p>
-
-      <ul className="entity-list">
+      <ul className="entity-list entity-grid">
         {active.map((e) => {
           const assignment = emergencyAssignmentMap.get(e.id);
           const isEnRoute = e.status === 'assigned' && assignment;
@@ -109,18 +105,17 @@ export function EmergencyPanel({
                 </span>
               </div>
               <div className="entity-meta">
-                <span>{e.peopleAffected} affected</span>
-                <span>{e.location.zone}</span>
-                <span>Needs: {e.requiredCapabilities.join(', ')}</span>
+                <span><strong>{e.location.zone}</strong> · {e.peopleAffected} affected</span>
+                <span className="entity-needs">Needs: {e.requiredCapabilities.join(', ')}</span>
               </div>
 
               <div className="distance-row">
-                <MapPin size={11} />
-                <span className="distance-label">{distInfo.label}:</span>
+                <MapPin size={13} />
+                <span className="distance-label">{isEnRoute ? 'En route' : 'Nearest'}:</span>
                 <span className="distance-value">
                   {distInfo.time != null ? `${distInfo.time} min` : '—'}
                   {distInfo.distance != null && (
-                    <span className="distance-units"> · {distInfo.distance} units</span>
+                    <span className="distance-units"> ({distInfo.distance} units)</span>
                   )}
                 </span>
               </div>
@@ -128,11 +123,11 @@ export function EmergencyPanel({
               <div className="entity-status">
                 {isEnRoute ? (
                   <>
-                    <Lock size={11} />
+                    <Lock size={13} />
                     <span>Assigned → {assignment.resourceId}</span>
                   </>
                 ) : (
-                  'Waiting for compatible resource'
+                  'Waiting for unit'
                 )}
               </div>
 
@@ -173,7 +168,7 @@ export function EmergencyPanel({
       {resolved.length > 0 && (
         <>
           <div className="panel-subtitle">Resolved ({resolved.length})</div>
-          <ul className="entity-list resolved-list">
+          <ul className="entity-list entity-grid resolved-list">
             {resolved.map((e) => (
               <li key={e.id} className="entity-item resolved">
                 <div className="entity-row">
